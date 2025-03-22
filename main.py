@@ -35,3 +35,14 @@ def fetch_video(url: str):
         return {"status": "error", "message": str(e)}
 
     return {"status": "error", "message": "Could not fetch video."}
+
+@app.get("/fetch_dash/")
+def fetch_dash_video(url: str):
+    try:
+        video_info = get_video_info(url, dash=True)
+        if video_info:
+            return {"status": "success", "data": video_info}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+    return {"status": "error", "message": "Could not fetch DASH video."}

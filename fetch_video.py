@@ -1,9 +1,9 @@
 import yt_dlp
 
-def get_video_info(url):
+def get_video_info(url, dash=False):
     ydl_opts = {
         'quiet': True,
-        'format': 'best',
+        'format': 'bestvideo+bestaudio/best' if dash else 'best',
         'noplaylist': True,
     }
     

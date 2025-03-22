@@ -1,67 +1,44 @@
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
 import time
 
 def get_dynamic_video(url):
-    options = webdriver.ChromeOptions()
-    options.add_argument("--headless")  # Run without opening a browser
-    options.add_argument("--disable-blink-features=AutomationControlled")  # Bypass bot detection
+    # Set up Chrome options
+    options = Options()
+    options.add_argument("--headless")  
+    options.add_argument("--disable-blink-features=AutomationControlled")  
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
-    options.add_argument("--disable-gpu")
-    options.add_argument("--disable-infobars")
-    options.add_argument("--disable-extensions")
-    options.add_argument("--disable-popup-blocking")
-    options.add_argument("--disable-notifications")
-    options.add_argument("--disable-logging")
-    options.add_argument("--disable-default-apps")
-    options.add_argument("--disable-translate")
-    options.add_argument("--disable-sync")
-    options.add_argument("--disable-background-networking")
-    options.add_argument("--disable-background-timer-throttling")
-    options.add_argument("--disable-backgrounding-occluded-windows")
-    options.add_argument("--disable-breakpad")
-    options.add_argument("--disable-client-side-phishing-detection")
-    options.add_argument("--disable-component-extensions-with-background-pages")
-    options.add_argument("--disable-features=TranslateUI,BlinkGenPropertyTrees")
-    options.add_argument("--disable-hang-monitor")
-    options.add_argument("--disable-ipc-flooding-protection")
-    options.add_argument("--disable-prompt-on-repost")
-    options.add_argument("--disable-renderer-backgrounding")
-    options.add_argument("--disable-sync")
-    options.add_argument("--disable-web-resources")
-    options.add_argument("--disable-web-security")
-    options.add_argument("--disable-webgl")
-    options.add_argument("--disable-xss-auditor")
-    options.add_argument("--enable-automation")
-    options.add_argument("--log-level=0")
-    options.add_argument("--no-first-run")
-    options.add_argument("--no-service-autorun")
-    options.add_argument("--password-store=basic")
-    options.add_argument("--use-mock-keychain")
-    options.add_argument("--user-data-dir=/tmp/user-data")
-    options.add_argument("--v=99")
-    options.add_argument("--single-process")
-    options.add_argument("--data-path=/tmp/data-path")
-    options.add_argument("--homedir=/tmp")
-    options.add_argument("--disk-cache-dir=/tmp/cache-dir")
-    options.add_argument("--disable-software-rasterizer")
-    options.add_argument("--disable-accelerated-2d-canvas")
-    options.add_argument("--disable-accelerated-jpeg-decoding")
-    options.add_argument("--disable-accelerated-mjpeg-decode")
-    options.add_argument("--disable-accelerated-video-decode")
-    options.add_argument("--disable-accelerated-video-encode")
+    options.add_argument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36")  
 
-    driver = webdriver.Chrome(options=options)
+    # Set up WebDriver
+    service = Service("/usr/local/bin/chromedriver")  # Update this path
+    driver = webdriver.Chrome(service=service, options=options)
 
-    driver.get(url)
-    time.sleep(5)  # Wait for content to load
+    try:
+        driver.get(url)
+        time.sleep(5)  # Allow page to load
 
-    video_elements = driver.find_elements(By.TAG_NAME, "video")
-    video_links = [video.get_attribute("src") for video in video_elements if video.get_attribute("src")]
+        # ✅ For YouTube: Get the real video URL
+        if "youtube.com" in url or "youtu.be" in url:
+            video_element = driver.execute_script("return document.querySelector('video')")
+            if video_element:
+                video_url = video_element.get_attribute("src")
+                return video_url if video_url else "YouTube Video URL not found."
 
-    driver.quit()
-    return video_links
+        # ✅ For other platforms: Extract video tags
+        video_elements = driver.find_elements(By.TAG_NAME, "video")
+        video_links = [video.get_attribute("src") for video in video_elements if video.get_attribute("src")]
+
+        return video_links if video_links else "No video found."
+
+    except Exception as e:
+        return f"Error: {str(e)}"
+
+    finally:
+        driver.quit()
 
 # Example Usage
 if __name__ == "__main__":
