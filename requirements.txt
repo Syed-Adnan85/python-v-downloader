@@ -1,3 +1,4 @@
+selenium
+yt_dlp
 fastapi
 uvicorn
-yt_dlp
